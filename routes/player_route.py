@@ -11,6 +11,7 @@ Features:
 Endpoints:
 - POST /players/                          : Create a new Player.
 - GET /players/                           : Retrieve all Players.
+- GET /players/count/                     : Retrive count of all Players.
 - GET /players/{player_id}                : Retrieve Player by UUID
                                             (surrogate key, internal).
 - GET /players/squadnumber/{squad_number} : Retrieve Player by Squad Number
@@ -26,7 +27,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aiocache import SimpleMemoryCache
 
 from databases.player_database import generate_async_session
-from models.player_model import PlayerRequestModel, PlayerResponseModel
+from models.player_model import (
+    PlayerCountResponseModel,
+    PlayerRequestModel,
+    PlayerResponseModel,
+)
 from services import player_service
 
 api_router = APIRouter()
@@ -114,6 +119,31 @@ async def get_all_async(
         await simple_memory_cache.set(CACHE_KEY, players, ttl=CACHE_TTL)
         response.headers["X-Cache"] = "MISS"
     return players
+
+
+@api_router.get(
+    "/players/count/",
+    response_model=PlayerCountResponseModel,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieves the count of all Players",
+    tags=["Players"],
+)
+async def get_count_async(
+    response: Response,
+    async_session: Annotated[AsyncSession, Depends(generate_async_session)],
+) -> PlayerCountResponseModel:
+    """
+    Endpoint to retrieve all players.
+
+    Args:
+        async_session (AsyncSession): The async version of a SQLAlchemy ORM session.
+
+    Returns:
+        int: A count of all players.
+    """
+
+    count = await player_service.retrieve_count_async(async_session)
+    return {"count": count}
 
 
 @api_router.get(

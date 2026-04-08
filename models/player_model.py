@@ -107,3 +107,14 @@ class PlayerResponseModel(MainModel):
     team: Optional[str] = None
     league: Optional[str] = None
     starting11: Optional[bool] = None
+
+
+class PlayerCountResponseModel(MainModel):
+    """
+    Pydantic model representing the count of all Players
+
+    Attributes:
+        count (int): the total number of Player records.
+    """
+
+    count: int

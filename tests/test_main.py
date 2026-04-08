@@ -4,6 +4,7 @@ Test suite for the /players/ API endpoints.
 Covers:
 - GET    /health/
 - GET    /players/
+- GET    /players/count/
 - GET    /players/{player_id}
 - GET    /players/squadnumber/{squad_number}
 - POST   /players/
@@ -87,6 +88,35 @@ def test_request_get_players_response_body_each_player_has_uuid(client):
     assert all(
         _is_valid_uuid(player["id"]) for player in players
     )  # UUID v5 (migration-seeded)
+
+
+# GET /players/count/ ----------------------------------------------------------
+
+
+def test_request_get_players_count_response_status_ok(client):
+    """GET /players/count/ returns 200 OK"""
+    # Act
+    response = client.get(PATH + "count/")
+    # Assert
+    assert response.status_code == 200
+
+
+def test_request_get_players_count_body_has_count(client):
+    response = client.get(PATH + "count/")
+    body = response.json()
+    assert "count" in body
+
+
+def test_request_get_players_count_is_integer(client):
+    response = client.get(PATH + "count/")
+    body = response.json()
+    assert isinstance(body["count"], int)
+
+
+def test_request_get_players_count_response_body_matches_players_length(client):
+    count_response = client.get(PATH + "count/")
+    players_response = client.get(PATH)
+    assert count_response.json()["count"] == len(players_response.json())
 
 
 # GET /players/{player_id} -----------------------------------------------------

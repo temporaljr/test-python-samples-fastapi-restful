@@ -117,6 +117,7 @@ Interactive API documentation is available via Swagger UI at `http://localhost:9
 | Method | Endpoint | Description | Status |
 | ------ | -------- | ----------- | ------ |
 | `GET` | `/players/` | List all players | `200 OK` |
+| `GET` | `/players/count` | Count all players | `200 OK` |
 | `GET` | `/players/{player_id}` | Get player by ID | `200 OK` |
 | `GET` | `/players/squadnumber/{squad_number}` | Get player by squad number | `200 OK` |
 | `POST` | `/players/` | Create new player | `201 Created` |
