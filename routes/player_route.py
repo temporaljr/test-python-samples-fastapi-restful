@@ -20,9 +20,9 @@ Endpoints:
 - DELETE /players/squadnumber/{squad_number} : Delete an existing Player.
 """
 
-from typing import Annotated, List
+from typing import Annotated, List, Literal
 from uuid import UUID
-from fastapi import APIRouter, Body, Depends, HTTPException, status, Path, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, status, Path, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiocache import SimpleMemoryCache
 
@@ -102,6 +102,7 @@ async def post_async(
 async def get_all_async(
     response: Response,
     async_session: Annotated[AsyncSession, Depends(generate_async_session)],
+    sort: Annotated[Literal["asc", "desc"] | None, Query()] = None
 ) -> List[PlayerResponseModel]:
     """
     Endpoint to retrieve all players.
@@ -112,11 +113,11 @@ async def get_all_async(
     Returns:
         List[PlayerResponseModel]: A list of Pydantic models representing all players.
     """
-    players = await simple_memory_cache.get(CACHE_KEY)
+    players = await simple_memory_cache.get(f"{CACHE_KEY}:{sort}")
     response.headers["X-Cache"] = "HIT"
     if players is None:
-        players = await player_service.retrieve_all_async(async_session)
-        await simple_memory_cache.set(CACHE_KEY, players, ttl=CACHE_TTL)
+        players = await player_service.retrieve_all_async(async_session, sort=sort)
+        await simple_memory_cache.set(f"{CACHE_KEY}:{sort}", players, ttl=CACHE_TTL)
         response.headers["X-Cache"] = "MISS"
     return players
 
