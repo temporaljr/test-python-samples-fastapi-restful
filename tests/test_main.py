@@ -3,7 +3,7 @@ Test suite for the /players/ API endpoints.
 
 Covers:
 - GET    /health/
-- GET    /players/
+- GET    /players/?sort=asc|desc
 - GET    /players/count/
 - GET    /players/{player_id}
 - GET    /players/squadnumber/{squad_number}
@@ -89,6 +89,43 @@ def test_request_get_players_response_body_each_player_has_uuid(client):
         _is_valid_uuid(player["id"]) for player in players
     )  # UUID v5 (migration-seeded)
 
+def test_request_get_players_sort(client):
+    """GET /players/?sort=asc returns players 200"""
+    # Act
+    response = client.get(PATH + "?sort=asc")
+    #Assert
+    assert response.status_code == 200
+    
+def test_request_get_players_sort_asc(client):
+    """GET /players/?sort=asc returns players sorted asc"""
+    # Act
+    response = client.get(PATH + "?sort=asc")
+    #Assert
+    players = response.json()
+    squad_numbers: list[int] = []
+    for player in players:
+        squad_numbers.append(player["squadNumber"])
+
+    assert squad_numbers == sorted(squad_numbers)
+
+def test_request_get_players_sort_desc(client):
+    """GET /players/?sort=desc returns players sorted desc"""
+    # Act
+    response = client.get(PATH + "?sort=desc")
+    # Assert
+    players = response.json()
+    squad_numbers: list[int] = []
+    for player in players:
+        squad_numbers.append(player["squadNumber"])
+
+    assert squad_numbers == sorted(squad_numbers, reverse=True)
+
+def test_request_get_players_bad_sort(client):
+    """GET /players/?sort=fsd returns 422"""
+    # Act
+    response = client.get(PATH + "?sort=fsd")
+    # Assert
+    assert response.status_code == 422
 
 # GET /players/count/ ----------------------------------------------------------
 

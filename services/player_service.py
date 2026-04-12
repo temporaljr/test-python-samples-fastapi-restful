@@ -15,7 +15,7 @@ Handles SQLAlchemy exceptions with transaction rollback and logs errors.
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -61,7 +61,10 @@ async def create_async(
 # Retrieve ---------------------------------------------------------------------
 
 
-async def retrieve_all_async(async_session: AsyncSession) -> List[Player]:
+async def retrieve_all_async(
+        async_session: AsyncSession,
+        sort: Literal["asc", "desc"] | None = None
+    ) -> List[Player]:
     """
     Retrieves all the players from the database.
 
@@ -73,6 +76,12 @@ async def retrieve_all_async(async_session: AsyncSession) -> List[Player]:
     """
     # https://docs.sqlalchemy.org/en/20/changelog/migration_20.html#migration-20-query-usage
     statement = select(Player)
+
+    if sort == "asc":
+        statement = statement.order_by(Player.squad_number.asc())
+    elif sort == "desc":
+        statement = statement.order_by(Player.squad_number.desc())
+
     result = await async_session.execute(statement)
     players = result.scalars().all()
     return players
